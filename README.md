@@ -95,7 +95,7 @@ inlined too but IMO that would be ugly.
 
 ## Why not MediaRecorder?
 
-[MediaRecorder](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder)
+[MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API)
 is great but:
 
 * Works only in Firefox and Chrome
