@@ -59,8 +59,8 @@ function inlineWorker() {
   let FFI = null;
   let ref = null;
   let pcm_l = null;
-  function vmsg_init() {
-    ref = FFI.vmsg_init();
+  function vmsg_init(rate) {
+    ref = FFI.vmsg_init(rate);
     if (!ref) return false;
     const pcm_l_ref = new Uint32Array(memory.buffer, ref, 1)[0];
     pcm_l = new Float32Array(memory.buffer, pcm_l_ref);
@@ -94,7 +94,7 @@ function inlineWorker() {
       });
       break;
     case "start":
-      if (!vmsg_init()) return postMessage({type: "error", data: "vmsg_init"});
+      if (!vmsg_init(msg.data)) return postMessage({type: "error", data: "vmsg_init"});
       break;
     case "data":
       if (!vmsg_encode(msg.data)) return postMessage({type: "error", data: "vmsg_encode"});
@@ -198,7 +198,6 @@ class Form {
 
     const audio = this.audio = new Audio();
     audio.autoplay = true;
-    audio.loop = true;
 
     const saveBtn = this.saveBtn = document.createElement("button");
     saveBtn.className = "vmsg-button vmsg-save-button";
@@ -305,7 +304,7 @@ class Form {
     this.recordBtn.style.display = "none";
     this.stopBtn.style.display = "";
     this.saveBtn.disabled = true;
-    this.worker.postMessage({type: "start", data: null});
+    this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
     this.ppNode.connect(this.audioCtx.destination);
   }
   stopRecording() {

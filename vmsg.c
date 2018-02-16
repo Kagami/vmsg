@@ -19,7 +19,7 @@ typedef struct {
 void vmsg_free(vmsg *v);
 
 WASM_EXPORT
-vmsg *vmsg_init(void) {
+vmsg *vmsg_init(int rate) {
   vmsg *v = calloc(1, sizeof (vmsg));
   if (!v)
     goto err;
@@ -42,6 +42,7 @@ vmsg *vmsg_init(void) {
 
   lame_set_mode(v->gfp, MONO);
   lame_set_num_channels(v->gfp, 1);
+  lame_set_in_samplerate(v->gfp, rate);
   lame_set_VBR(v->gfp, vbr_default);
   lame_set_VBR_quality(v->gfp, 5);
 
