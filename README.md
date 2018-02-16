@@ -37,20 +37,19 @@ npm install vmsg --save
 import { record } from "vmsg";
 
 someButton.onclick = function() {
-  record(/* {wasmURL: "/path/to/vmsg.wasm"} */)
-    .then(file => {
-      console.log("Recorded MP3:", file);
-      // Can be used like this:
-      //
-      // const form = new FormData();
-      // form.append("file[]", file);
-      // fetch("/upload.php", {
-      //   credentials: "include",
-      //   method: "POST",
-      //   body: form,
-      // }).then(resp => {
-      // });
-    });
+  record(/* {wasmURL: "/path/to/vmsg.wasm"} */).then(file => {
+    console.log("Recorded MP3", file);
+    // Can be used like this:
+    //
+    // const form = new FormData();
+    // form.append("file[]", file);
+    // fetch("/upload.php", {
+    //   credentials: "include",
+    //   method: "POST",
+    //   body: form,
+    // }).then(resp => {
+    // });
+  });
 };
 ```
 
@@ -61,11 +60,11 @@ See also [demo](demo) directory for a more feasible example.
 
 ## Development
 
-1. [Install Emscripten SDK](http://webassembly.org/getting-started/developers-guide/)
+1. Install [Emscripten SDK](https://github.com/juj/emsdk).
 2. Install latest LLVM, Clang and LLD with WebAssembly backend, fix
-   `LLVM_ROOT` variable of Emscripten config
-3. Make sure you have a standard GNU development environment
-4. Activate emsdk environment
+   `LLVM_ROOT` variable of Emscripten config.
+3. Make sure you have a standard GNU development environment.
+4. Activate emsdk environment.
 5. ```bash
    git clone --recurse-submodules https://github.com/Kagami/vmsg.git && cd vmsg
    make clean all
@@ -99,9 +98,9 @@ inlined too but IMO that would be ugly.
 [MediaRecorder](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder)
 is great but:
 
-1. Works only in Firefox and Chrome
-2. Provides little to no options, e.g. VBR quality can't be specified
-3. Firefox/Chrome encode only to Opus which can't be natively played in Safari and Edge
+* Works only in Firefox and Chrome
+* Provides little to no options, e.g. VBR quality can't be specified
+* Firefox/Chrome encode only to Opus which can't be natively played in Safari and Edge
 
 ## License
 
