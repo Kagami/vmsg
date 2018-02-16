@@ -5,7 +5,7 @@
   "main": "vmsg.js",
   "scripts": {
     "start": "parcel demo/index.html",
-    "demo": "D=`mktemp -d` && parcel build demo/index.html --out-dir \"$D\" --public-url ./ && git checkout gh-pages && rm -f *.{html,js,css,wasm} && mv \"$D\"/* . && rmdir \"$D\" && git add -A && git commit -m 'Update demo'"
+    "demo": "D=`mktemp -d` && parcel build demo/index.html --out-dir \"$D\" --public-url ./ && git checkout gh-pages && rm * && mv \"$D\"/* . && rmdir \"$D\" && git add -A && git commit -m 'Update demo'"
   },
   "repository": {
     "type": "git",
