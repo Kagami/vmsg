@@ -1,4 +1,4 @@
-# vmsg
+# vmsg [![npm](https://img.shields.io/npm/v/vmsg.svg)](https://www.npmjs.com/package/vmsg)
 
 vmsg is a small library for creating voice messages. While traditional
 way of communication on the web is via text, sometimes it's easier or
