@@ -15,10 +15,7 @@ function inlineWorker() {
   // Though gzipped WASM module currently weights ~70kb so it should be
   // perfectly cached by the browser itself.
   function fetchAndInstantiate(url, imports) {
-    // Can't use relative URL in blob worker, see:
-    // https://stackoverflow.com/a/22582695
-    const fullURL = new URL(url, location.origin).href;
-    const req = fetch(fullURL, {credentials: "same-origin"});
+    const req = fetch(url, {credentials: "same-origin"});
     return WebAssembly.instantiateStreaming
       ? WebAssembly.instantiateStreaming(req, imports)
       : req.then(res => res.arrayBuffer())
@@ -113,7 +110,9 @@ function inlineWorker() {
 
 class Form {
   constructor(opts = {}, resolve, reject) {
-    this.wasmURL = opts.wasmURL || "vmsg.wasm";
+    // Can't use relative URL in blob worker, see:
+    // https://stackoverflow.com/a/22582695
+    this.wasmURL = new URL(opts.wasmURL || "vmsg.wasm", location).href;
     this.resolve = resolve;
     this.reject = reject;
     this.backdrop = null;
