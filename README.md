@@ -54,7 +54,7 @@ someButton.onclick = function() {
 ```
 
 That's it! Don't forget to include [vmsg.css](vmsg.css) and
-[vmsg.wasm](vmsg.wasm) to your project.
+[vmsg.wasm](vmsg.wasm) in your project.
 
 See also [demo](demo) directory for a more feasible example.
 

@@ -24,7 +24,7 @@ lame-svn/lame/dist/lib/libmp3lame.so:
 # WASM backend doesn't support EMSCRIPTEN_KEEPALIVE, see:
 # https://github.com/kripken/emscripten/issues/6233
 # Output to bare .wasm doesn't work properly so need to create
-# intermediate file.
+# intermediate files.
 vmsg.wasm: lame-svn/lame/dist/lib/libmp3lame.so vmsg.c
 	emcc $^ \
 		-DNDEBUG -Oz --llvm-lto 3 -Ilame-svn/lame/dist/include \
