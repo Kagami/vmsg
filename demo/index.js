@@ -57,21 +57,32 @@ class Comment extends React.Component {
       this.audio.src = URL.createObjectURL(props.file);
     }
   }
+  handleFileOver = () => {
+    this.audio.currentTime = 0;
+    this.audio.play();
+  };
+  handleFileOut = () => {
+    this.audio.pause();
+  };
   handleFileClick = () => {
-    if (this.audio.paused) {
-      this.audio.play();
-    } else {
-      this.audio.pause();
-    }
+    const a = document.createElement("a");
+    a.href = this.audio.src;
+    a.download = this.props.file.name;
+    a.click();
   };
   render() {
-    const { body } = this.props;
+    const { id, body } = this.props;
     return (
       <article className="comment">
-        {this.renderFile()}
-        <section className="comment__body">
+        <header className="comment__header">
+          <h5 className="comment__id">
+            Comment #{id + 1}
+          </h5>
+          {this.renderFile()}
+        </header>
+        <blockquote className="comment__body">
           {body}
-        </section>
+        </blockquote>
       </article>
     );
   }
@@ -79,9 +90,15 @@ class Comment extends React.Component {
     const { file } = this.props;
     if (!file) return null;
     return (
-      <section className="comment__file" title="Play" onClick={this.handleFileClick}>
+      <span
+        className="comment__file"
+        title="Hover to play / click to download"
+        onMouseOver={this.handleFileOver}
+        onMouseOut={this.handleFileOut}
+        onClick={this.handleFileClick}
+      >
         ♫
-      </section>
+      </span>
     )
   }
 }

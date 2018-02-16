@@ -16,7 +16,7 @@ textarea {
 
 .app {
   margin: 0 auto;
-  max-width: 800px;
+  max-width: 700px;
 }
 
 .post__header {
@@ -30,26 +30,31 @@ textarea {
 
 .comments {
   font-size: 15px;
-  padding-left: 40px;
 }
 
 .comment {
   margin-bottom: 20px;
-  padding: 8px 10px;
+  padding: 6px 10px;
   background: #e4e1e5;
   border-radius: 4px;
   box-shadow: 1px 1px 4px 0 rgba(59,26,84,.6);
-  display: flex;
 }
 
-.comment__body {
-  white-space: pre;
+.comment__header {
+  margin-bottom: 3px;
+}
+
+.comment__id {
+  display: inline-block;
+  margin: 0;
+  margin-right: 5px;
+  cursor: default;
+  user-select: none;
 }
 
 .comment__file {
-  margin-right: 10px;
-  line-height: 21px;
-  font-size: 25px;
+  font-size: 20px;
+  line-height: 17px;
   color: #00f;
   cursor: pointer;
 }
@@ -58,8 +63,13 @@ textarea {
   color: #f00;
 }
 
+.comment__body {
+  margin: 0;
+  white-space: pre;
+}
+
 .reply {
-  padding: 8px 10px;
+  padding: 6px 10px;
   background: #e4e1e5;
   border-radius: 4px;
   box-shadow: 1px 1px 4px 0 rgba(59,26,84,.6);
