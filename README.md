@@ -8,7 +8,7 @@ standard program, upload to file hosting and share the link. But why
 bother with all of that boredom stuff if you can do the same in browser
 with a few clicks.
 
-**[DEMO](https://kagami.github.io/vmsg/)**
+:fireworks: :tada: **[DEMO](https://kagami.github.io/vmsg/)** :tada: :fireworks:
 
 ## Features
 
