@@ -19,8 +19,8 @@ with a few clicks.
 
 ## Supported browsers
 
-* Firefox 53+
 * Chrome 57+
+* Firefox 53+
 * Safari 11+
 * Edge 16+
 
@@ -67,8 +67,7 @@ See also [demo](demo) directory for a more feasible example.
 3. Make sure you have a standard GNU development environment
 4. Activate emsdk environment
 5. ```bash
-   git clone --recurse-submodules https://github.com/Kagami/vmsg.git
-   cd vmsg
+   git clone --recurse-submodules https://github.com/Kagami/vmsg.git && cd vmsg
    make clean all
    npm install
    npm start
@@ -108,4 +107,4 @@ is great but:
 
 vmsg is licensed under [CC0](COPYING).  
 LAME is licensed under [LGPL](https://github.com/Kagami/lame-svn/blob/master/lame/COPYING).  
-MP3 patents seems to be expired [since April 23, 2017](https://en.wikipedia.org/wiki/LAME#Patents_and_legal_issues).
+MP3 patents seems to be [expired since April 23, 2017](https://en.wikipedia.org/wiki/LAME#Patents_and_legal_issues).
