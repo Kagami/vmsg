@@ -106,4 +106,4 @@ is great but:
 
 vmsg is licensed under [CC0](COPYING).  
 LAME is licensed under [LGPL](https://github.com/Kagami/lame-svn/blob/master/lame/COPYING).  
-MP3 patents seems to be [expired since April 23, 2017](https://en.wikipedia.org/wiki/LAME#Patents_and_legal_issues).
+MP3 patents seems to [have expired since April 23, 2017](https://en.wikipedia.org/wiki/LAME#Patents_and_legal_issues).
