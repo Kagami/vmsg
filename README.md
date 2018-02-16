@@ -89,7 +89,7 @@ and calling LAME API.
 Module is produced with modern LLVM WASM backend and LLD linker which
 should become standard soon, also vmsg has own tiny WASM runtime instead
 of Emscripten's to decrease overall size and simplify architecture.
-Worker code is inlined to the main JS module so end-user has to care
+Worker code is included in the main JS module so end-user has to care
 only about 3 files: `vmsg.js`, `vmsg.css` and `vmsg.wasm`. CSS can be
 inlined too but IMO that would be ugly.
 
