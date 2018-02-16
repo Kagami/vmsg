@@ -20,7 +20,7 @@ void vmsg_free(vmsg *v);
 
 WASM_EXPORT
 vmsg *vmsg_init(void) {
-  vmsg *v = malloc(sizeof (vmsg));
+  vmsg *v = calloc(1, sizeof (vmsg));
   if (!v)
     goto err;
 
