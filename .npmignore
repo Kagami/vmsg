@@ -6,4 +6,5 @@
 /.gitmodules
 /vmsg.c
 /Makefile
+/lame-svn/
 /lame-svn.patch
