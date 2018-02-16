@@ -1,0 +1,26 @@
+diff --git a/lame/configure b/lame/configure
+index 52dbf02f..b0883041 100755
+--- a/lame/configure
++++ b/lame/configure
+@@ -14968,7 +14968,7 @@ fi
+ done
+ 
+ 
+-if test "X${ac_cv_func_strtol}" != "Xyes"; then
++if false && test "X${ac_cv_func_strtol}" != "Xyes"; then
+ 	as_fn_error $? "function strtol is mandatory" "$LINENO" 5
+ fi
+ 
+diff --git a/lame/libmp3lame/util.c b/lame/libmp3lame/util.c
+index 69ec8577..94eacbee 100644
+--- a/lame/libmp3lame/util.c
++++ b/lame/libmp3lame/util.c
+@@ -713,8 +713,6 @@ fill_buffer(lame_internal_flags * gfc,
+ void
+ lame_report_def(const char *format, va_list args)
+ {
+-    (void) vfprintf(stderr, format, args);
+-    fflush(stderr); /* an debug function should flush immediately */
+ }
+ 
+ void 
