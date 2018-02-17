@@ -1,5 +1,3 @@
-let shown = false;
-
 function pad2(n) {
   n |= 0;
   return n < 10 ? `0${n}` : `${Math.min(n, 99)}`;
@@ -243,7 +241,6 @@ class Form {
     if (this.fileURL) URL.revokeObjectURL(this.fileURL);
     if (this.tid) clearTimeout(this.tid);
     this.backdrop.remove();
-    shown = false;
     if (file) {
       this.resolve(file);
     } else {
@@ -329,6 +326,8 @@ class Form {
   }
 }
 
+let shown = false;
+
 /**
  * Record a new voice message.
  *
@@ -341,5 +340,11 @@ export function record(opts) {
     if (shown) throw new Error("Record form is already opened");
     shown = true;
     new Form(opts, resolve, reject);
+  }).then(result => {
+    shown = false;
+    return result;
+  }, err => {
+    shown = false;
+    throw err;
   });
 }
