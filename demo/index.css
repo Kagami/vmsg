@@ -14,6 +14,17 @@ textarea {
   font-size: 15px;
 }
 
+a {
+  text-decoration: none;
+}
+
+.ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 0;
+}
+
 .app {
   margin: 0 auto;
   max-width: 700px;
