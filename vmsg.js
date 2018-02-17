@@ -149,7 +149,14 @@ class Form {
     popup.className = "vmsg-popup";
     popup.addEventListener("click", (e) => e.stopPropagation());
 
-    // TODO(Kagami): Draw progress bar.
+    const progress = document.createElement("div");
+    progress.className = "vmsg-progress";
+    for (let i = 0; i < 3; i++) {
+      const progressDot = document.createElement("div");
+      progressDot.className = "vmsg-progress-dot";
+      progress.appendChild(progressDot);
+    }
+    popup.appendChild(progress);
 
     backdrop.appendChild(popup);
     document.body.appendChild(backdrop);
