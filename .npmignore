@@ -1,10 +1,5 @@
-/dist/
-/.cache/
-/_vmsg.*
-/demo/
-/.babelrc
-/.gitmodules
-/vmsg.c
-/Makefile
-/lame-svn/
-/lame-svn.patch
+*
+!/COPYING
+!/vmsg.css
+!/vmsg.js
+!/vmsg.wasm
