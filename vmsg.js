@@ -377,7 +377,7 @@ let shown = false;
  *
  * @param {Object=} opts - Options
  * @param {string=} opts.wasmURL - URL of the module ("vmsg.wasm" by default)
- * @param {number=} opts.pitch - Initial pitch shift (0 by default)
+ * @param {number=} opts.pitch - Initial pitch shift ([-1, 1], 0 by default)
  * @return {Promise.<File>} A promise that contains recorded file when fulfilled.
  */
 export function record(opts) {
