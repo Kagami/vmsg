@@ -61,7 +61,6 @@
 .vmsg-record-row {
   display: flex;
   justify-content: space-between;
-  /* margin-bottom: 3px; */
 }
 
 .vmsg-button {
@@ -105,9 +104,33 @@
   user-select: none;
 }
 
+.vmsg-slider-wrapper {
+  position: relative;
+  margin-top: 3px;
+}
+.vmsg-slider-wrapper::after {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  line-height: 14px;
+  text-align: center;
+  color: #999;
+  pointer-events: none;
+}
+.vmsg-pitch-slider-wrapper::after {
+  content: "pitch";
+}
+.vmsg-gain-slider-wrapper::after {
+  content: "gain";
+}
 .vmsg-slider {
+  display: block;
   width: 100%;
+  height: 16px;
   margin: 0;
+  padding: 0;
   outline: none;
   background: none;
   -webkit-appearance: none;
@@ -116,52 +139,50 @@
   border: 0;
 }
 .vmsg-slider::-webkit-slider-runnable-track {
-  border: 1px solid #ccc;
+  box-sizing: border-box;
+  height: 16px;
   background: none;
-  height: 15px;
+  border: 1px solid #ccc;
 }
 .vmsg-slider::-moz-range-track {
-  border: 1px solid #ccc;
+  box-sizing: border-box;
+  height: 16px;
   background: none;
-  height: 15px;
+  border: 1px solid #ccc;
 }
 .vmsg-slider::-ms-track {
-  border: 1px solid #ccc;
+  box-sizing: border-box;
+  height: 16px;
   background: none;
-  height: 15px;
+  border: 1px solid #ccc;
 }
 .vmsg-slider::-webkit-slider-thumb {
-  box-sizing: border-box;
   width: 39px;
-  height: 15px;
+  height: 14px;
   background: #ccc;
-  border: 1px solid #ccc;
   cursor: pointer;
   -webkit-appearance: none;
 }
 .vmsg-slider::-moz-range-thumb {
-  box-sizing: border-box;
-  width: 39px;
-  height: 15px;
+  width: 40px;
+  height: 14px;
   background: #ccc;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 0;
   cursor: pointer;
 }
 .vmsg-slider::-ms-thumb {
-  box-sizing: border-box;
   width: 39px;
-  height: 15px;
+  height: 14px;
   background: #ccc;
-  border: 1px solid #ccc;
   cursor: pointer;
 }
 .vmsg-slider::-webkit-slider-thumb:hover {
-  border-color: #9e85ad;
+  background: #999;
 }
 .vmsg-slider::-moz-range-thumb:hover {
-  border-color: #9e85ad;
+  background: #999;
 }
 .vmsg-slider::-ms-thumb:hover {
-  border-color: #9e85ad;
+  background: #999;
 }

@@ -111,6 +111,7 @@ class Form {
     // Can't use relative URL in blob worker, see:
     // https://stackoverflow.com/a/22582695
     this.wasmURL = new URL(opts.wasmURL || "vmsg.wasm", location).href;
+    this.pitch = opts.pitch || 0;
     this.resolve = resolve;
     this.reject = reject;
     this.backdrop = null;
@@ -120,9 +121,10 @@ class Form {
     this.timer = null;
     this.audio = null;
     this.saveBtn = null;
-    this.pitchSlider = null;
     this.audioCtx = null;
-    this.ppNode = null;
+    this.gainNode = null;
+    this.pitchFX = null;
+    this.encNode = null;
     this.worker = null;
     this.workerURL = null;
     this.file = null;
@@ -174,7 +176,6 @@ class Form {
     const recordBtn = this.recordBtn = document.createElement("button");
     recordBtn.className = "vmsg-button vmsg-record-button";
     recordBtn.textContent = "●";
-    recordBtn.title = "Start recording";
     recordBtn.addEventListener("click", () => this.startRecording());
     recordRow.appendChild(recordBtn);
 
@@ -182,13 +183,14 @@ class Form {
     stopBtn.className = "vmsg-button vmsg-stop-button";
     stopBtn.style.display = "none";
     stopBtn.textContent = "◼";
-    stopBtn.title = "Stop recording";
     stopBtn.addEventListener("click", () => this.stopRecording());
     recordRow.appendChild(stopBtn);
 
+    const audio = this.audio = new Audio();
+    audio.autoplay = true;
+
     const timer = this.timer = document.createElement("span");
     timer.className = "vmsg-timer";
-    timer.title = "Play record";
     timer.addEventListener("click", () => {
       if (audio.paused) {
         if (this.fileURL) {
@@ -201,23 +203,52 @@ class Form {
     this.drawTime(0);
     recordRow.appendChild(timer);
 
-    const audio = this.audio = new Audio();
-    audio.autoplay = true;
-
     const saveBtn = this.saveBtn = document.createElement("button");
     saveBtn.className = "vmsg-button vmsg-save-button";
     saveBtn.textContent = "✓";
     saveBtn.disabled = true;
-    saveBtn.title = "Save record";
     saveBtn.addEventListener("click", () => this.close(this.file));
     recordRow.appendChild(saveBtn);
 
-    // const pitchSlider = this.pitchSlider = document.createElement("input");
-    // pitchSlider.className = "vmsg-slider vmsg-pitch-slider";
-    // pitchSlider.setAttribute("type", "range");
-    // pitchSlider.value = 0;
-    // pitchSlider.title = "Change pitch";
-    // this.popup.appendChild(pitchSlider);
+    const gainWrapper = document.createElement("div");
+    gainWrapper.className = "vmsg-slider-wrapper vmsg-gain-slider-wrapper";
+    const gainSlider = document.createElement("input");
+    gainSlider.className = "vmsg-slider vmsg-gain-slider";
+    gainSlider.setAttribute("type", "range");
+    gainSlider.min = 0;
+    gainSlider.max = 2;
+    gainSlider.step = 0.2;
+    gainSlider.value = 1;
+    gainSlider.onchange = () => {
+      const gain = +gainSlider.value;
+      this.gainNode.gain.value = gain;
+    };
+    gainSlider.onchange();
+    gainWrapper.appendChild(gainSlider);
+    this.popup.appendChild(gainWrapper);
+
+    const pitchWrapper = document.createElement("div");
+    pitchWrapper.className = "vmsg-slider-wrapper vmsg-pitch-slider-wrapper";
+    const pitchSlider = document.createElement("input");
+    pitchSlider.className = "vmsg-slider vmsg-pitch-slider";
+    pitchSlider.setAttribute("type", "range");
+    pitchSlider.min = -1;
+    pitchSlider.max = 1;
+    pitchSlider.step = 0.2;
+    pitchSlider.value = this.pitch;
+    pitchSlider.onchange = () => {
+      const pitch = +pitchSlider.value;
+      this.pitchFX.setPitchOffset(pitch);
+      this.gainNode.disconnect();
+      if (pitch === 0) {
+        this.gainNode.connect(this.encNode);
+      } else {
+        this.gainNode.connect(this.pitchFX.input);
+      }
+    };
+    pitchSlider.onchange();
+    pitchWrapper.appendChild(pitchSlider);
+    this.popup.appendChild(pitchWrapper);
   }
   drawError(err) {
     console.error(err);
@@ -234,7 +265,7 @@ class Form {
   }
   close(file) {
     if (this.audio) this.audio.pause();
-    if (this.ppNode) this.ppNode.disconnect();
+    if (this.encNode) this.encNode.disconnect();
     if (this.audioCtx) this.audioCtx.close();
     if (this.worker) this.worker.terminate();
     if (this.workerURL) URL.revokeObjectURL(this.workerURL);
@@ -247,6 +278,14 @@ class Form {
       this.reject(new Error("No record made"));
     }
   }
+  // Without pitch shift:
+  //   [sourceNode] -> [gainNode] -> [encNode] -> [audioCtx.destination]
+  //                                     |
+  //                                     -> [worker]
+  // With pitch shift:
+  //   [sourceNode] -> [gainNode] -> [pitchFX] -> [encNode] -> [audioCtx.destination]
+  //                                                  |
+  //                                                  -> [worker]
   initAudio() {
     if (!navigator.mediaDevices.getUserMedia) {
       const err = new Error("getUserMedia is not implemented in this browser");
@@ -254,13 +293,18 @@ class Form {
     }
     return navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
       const audioCtx = this.audioCtx = new AudioContext();
+
       const sourceNode = audioCtx.createMediaStreamSource(stream);
-      const ppNode = this.ppNode = audioCtx.createScriptProcessor(0, 1, 1);
-      ppNode.onaudioprocess = (e) => {
+      const gainNode = this.gainNode = audioCtx.createGain();
+      sourceNode.connect(gainNode);
+
+      const pitchFX = this.pitchFX = new Jungle(audioCtx);
+      const encNode = this.encNode = audioCtx.createScriptProcessor(0, 1, 1);
+      encNode.onaudioprocess = (e) => {
         const samples = e.inputBuffer.getChannelData(0);
         this.worker.postMessage({type: "data", data: samples});
       };
-      sourceNode.connect(ppNode);
+      pitchFX.output.connect(encNode);
     });
   }
   initWorker(module) {
@@ -309,13 +353,13 @@ class Form {
     this.stopBtn.style.display = "";
     this.saveBtn.disabled = true;
     this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
-    this.ppNode.connect(this.audioCtx.destination);
+    this.encNode.connect(this.audioCtx.destination);
   }
   stopRecording() {
     clearTimeout(this.tid);
     this.tid = 0;
     this.stopBtn.disabled = true;
-    this.ppNode.disconnect();
+    this.encNode.disconnect();
     this.worker.postMessage({type: "stop", data: null});
   }
   updateTime() {
@@ -332,7 +376,8 @@ let shown = false;
  * Record a new voice message.
  *
  * @param {Object=} opts - Options
- * @param {number=} opts.wasmURL - URL of the module (`vmsg.wasm` by default)
+ * @param {string=} opts.wasmURL - URL of the module ("vmsg.wasm" by default)
+ * @param {number=} opts.pitch - Initial pitch shift (0 by default)
  * @return {Promise.<File>} A promise that contains recorded file when fulfilled.
  */
 export function record(opts) {
@@ -340,6 +385,7 @@ export function record(opts) {
     if (shown) throw new Error("Record form is already opened");
     shown = true;
     new Form(opts, resolve, reject);
+  // Use `.finally` once it's available in Safari and Edge.
   }).then(result => {
     shown = false;
     return result;
