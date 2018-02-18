@@ -56,7 +56,6 @@
 .vmsg-error {
   font-weight: bold;
   text-align: center;
-  word-break: break-all;
 }
 
 .vmsg-record-row {
