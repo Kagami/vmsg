@@ -105,7 +105,7 @@ is great but:
 ## But you can use e.g. ogv.js polyfill!
 
 * It make things more complicated, now you need both encoder and decoder
-* Opus gives you ~2x bitrate win but for 500kb/min files it's not that much
+* Opus gives you ~2x bitrate win but for 500kb per minute files it's not that much
 * MP3 is much more widespread, so even while compression is not best compatibility matters
 
 ## License
