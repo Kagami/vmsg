@@ -36,7 +36,7 @@ function inlineWorker() {
     return oldDynamicTop;
   }
   // TODO(Kagami): LAME calls exit(-1) on internal error. Would be nice
-  // to provide custom DEBUGF/ERRORF for easier debugging. By the moment
+  // to provide custom DEBUGF/ERRORF for easier debugging. Currenty
   // those functions do nothing.
   function exit(status) {
     postMessage({type: "internal-error", data: status});
@@ -397,7 +397,7 @@ export function record(opts) {
 
 // Borrowed from and slightly modified:
 // https://github.com/cwilso/Audio-Input-Effects/blob/master/js/jungle.js
-//
+
 // Copyright 2012, Google Inc.
 // All rights reserved.
 //
