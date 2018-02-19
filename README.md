@@ -102,6 +102,12 @@ is great but:
 * Provides little to no options, e.g. VBR quality can't be specified
 * Firefox/Chrome encode only to Opus which can't be natively played in Safari and Edge
 
+## But you can use e.g. ogv.js polyfill!
+
+* It make things more compicated, now you need both encoder and decoder
+* Opus gives you ~2x bitrate win but for 500kb/min files it's not that much
+* MP3 is much more widespread, so even while compression is not best compatibility matters
+
 ## License
 
 vmsg is licensed under [CC0](COPYING).  
