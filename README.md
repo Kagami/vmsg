@@ -5,7 +5,7 @@ way of communication on the web is via text, sometimes it's easier or
 rather funnier to express your thoughts just by saying it. Of course it
 doesn't require any special support: record your voice with some
 standard program, upload to file hosting and share the link. But why
-bother with all of that boredom stuff if you can do the same in browser
+bother with all of that tedious stuff if you can do the same in browser
 with a few clicks.
 
 :fireworks: :tada: **[DEMO](https://kagami.github.io/vmsg/)** :tada: :fireworks:
