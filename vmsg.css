@@ -187,3 +187,6 @@
 .vmsg-slider::-ms-thumb:hover {
   background: #999;
 }
+.vmsg-slider::-ms-tooltip {
+  display: none;
+}
