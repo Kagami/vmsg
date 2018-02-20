@@ -52,22 +52,22 @@ class Comments extends React.Component {
 class Comment extends React.Component {
   constructor(props) {
     super(props);
-    if (props.file) {
+    if (props.record) {
       this.audio = new Audio();
-      this.audio.src = URL.createObjectURL(props.file);
+      this.audio.src = URL.createObjectURL(props.record);
     }
   }
-  handleFileOver = () => {
+  handleRecordOver = () => {
     this.audio.currentTime = 0;
     this.audio.play();
   };
-  handleFileOut = () => {
+  handleRecordOut = () => {
     this.audio.pause();
   };
-  handleFileClick = () => {
+  handleRecordClick = () => {
     const a = document.createElement("a");
     a.href = this.audio.src;
-    a.download = this.props.file.name;
+    a.download = "record.mp3";
     a.click();
   };
   render() {
@@ -78,7 +78,7 @@ class Comment extends React.Component {
           <h5 className="comment__id">
             Comment #{id + 1}
           </h5>
-          {this.renderFile()}
+          {this.renderRecord()}
         </header>
         <blockquote className="comment__body">
           {body}
@@ -86,16 +86,16 @@ class Comment extends React.Component {
       </article>
     );
   }
-  renderFile() {
-    const { file } = this.props;
-    if (!file) return null;
+  renderRecord() {
+    const { record } = this.props;
+    if (!record) return null;
     return (
       <span
-        className="comment__file"
+        className="comment__record"
         title="Hover to play / click to download"
-        onMouseOver={this.handleFileOver}
-        onMouseOut={this.handleFileOut}
-        onClick={this.handleFileClick}
+        onMouseOver={this.handleRecordOver}
+        onMouseOut={this.handleRecordOut}
+        onClick={this.handleRecordClick}
       >
         ♫
       </span>
@@ -108,7 +108,7 @@ class Reply extends React.Component {
     super(props);
     this.state = {
       body: "",
-      file: null,
+      record: null,
     };
   }
   handleBodyChange = (e) => {
@@ -116,17 +116,17 @@ class Reply extends React.Component {
   };
   handleRecord = () => {
     vmsg.record({wasmURL: require("../vmsg.wasm")})
-      .then(file => {
-        this.setState({file});
+      .then(record => {
+        this.setState({record});
       });
   };
   handleSend = () => {
-    const { body, file } = this.state;
-    this.setState({body: "", file: null});
-    this.props.onSend({body, file});
+    const { body, record } = this.state;
+    this.setState({body: "", record: null});
+    this.props.onSend({body, record});
   };
   render() {
-    const { body, file } = this.state;
+    const { body, record } = this.state;
     return (
       <article className="reply">
         <textarea
@@ -143,18 +143,18 @@ class Reply extends React.Component {
           <button className="reply-control" onClick={this.handleRecord}>
             Record
           </button>
-          {this.renderFile()}
+          {this.renderRecord()}
         </footer>
       </article>
     );
   }
-  renderFile() {
-    const { file } = this.state;
-    if (!file) return null;
-    const size = (file.size / 1024).toFixed(1) + "KB";
+  renderRecord() {
+    const { record } = this.state;
+    if (!record) return null;
+    const size = (record.size / 1024).toFixed(1) + "KB";
     return (
-      <span className="reply-file">
-        {file.name} ({size})
+      <span className="reply-record">
+        record.mp3 ({size})
       </span>
     );
   }

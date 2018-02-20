@@ -73,11 +73,11 @@ function inlineWorker() {
     const mp3_ref = new Uint32Array(memory.buffer, ref + 4, 1)[0];
     const size = new Uint32Array(memory.buffer, ref + 8, 1)[0];
     const mp3 = new Uint8Array(memory.buffer, mp3_ref, size);
-    const file = new File([mp3], "rec.mp3", {type: "audio/mpeg"});
+    const blob = new Blob([mp3], {type: "audio/mpeg"});
     FFI.vmsg_free(ref);
     ref = null;
     pcm_l = null;
-    return file;
+    return blob;
   }
 
   onmessage = (e) => {
@@ -98,9 +98,9 @@ function inlineWorker() {
       if (!vmsg_encode(msg.data)) return postMessage({type: "error", data: "vmsg_encode"});
       break;
     case "stop":
-      const file = vmsg_flush();
-      if (!file) return postMessage({type: "error", data: "vmsg_flush"});
-      postMessage({type: "stop", data: file});
+      const blob = vmsg_flush();
+      if (!blob) return postMessage({type: "error", data: "vmsg_flush"});
+      postMessage({type: "stop", data: blob});
       break;
     }
   };
@@ -127,8 +127,8 @@ class Form {
     this.encNode = null;
     this.worker = null;
     this.workerURL = null;
-    this.file = null;
-    this.fileURL = null;
+    this.blob = null;
+    this.blobURL = null;
     this.tid = 0;
     this.start = 0;
     Object.seal(this);
@@ -193,8 +193,8 @@ class Form {
     timer.className = "vmsg-timer";
     timer.addEventListener("click", () => {
       if (audio.paused) {
-        if (this.fileURL) {
-          audio.src = this.fileURL;
+        if (this.blobURL) {
+          audio.src = this.blobURL;
         }
       } else {
         audio.pause();
@@ -207,7 +207,7 @@ class Form {
     saveBtn.className = "vmsg-button vmsg-save-button";
     saveBtn.textContent = "✓";
     saveBtn.disabled = true;
-    saveBtn.addEventListener("click", () => this.close(this.file));
+    saveBtn.addEventListener("click", () => this.close(this.blob));
     recordRow.appendChild(saveBtn);
 
     const gainWrapper = document.createElement("div");
@@ -263,17 +263,17 @@ class Form {
     if (!this.popup) return;
     this.popup.innerHTML = "";
   }
-  close(file) {
+  close(blob) {
     if (this.audio) this.audio.pause();
     if (this.encNode) this.encNode.disconnect();
     if (this.audioCtx) this.audioCtx.close();
     if (this.worker) this.worker.terminate();
     if (this.workerURL) URL.revokeObjectURL(this.workerURL);
-    if (this.fileURL) URL.revokeObjectURL(this.fileURL);
+    if (this.blobURL) URL.revokeObjectURL(this.blobURL);
     if (this.tid) clearTimeout(this.tid);
     this.backdrop.remove();
-    if (file) {
-      this.resolve(file);
+    if (blob) {
+      this.resolve(blob);
     } else {
       this.reject(new Error("No record made"));
     }
@@ -331,8 +331,8 @@ class Form {
           console.error("Worker error:", msg.data);
           break;
         case "stop":
-          this.file = msg.data;
-          this.fileURL = URL.createObjectURL(msg.data);
+          this.blob = msg.data;
+          this.blobURL = URL.createObjectURL(msg.data);
           this.recordBtn.style.display = "";
           this.stopBtn.style.display = "none";
           this.stopBtn.disabled = false;
@@ -344,9 +344,9 @@ class Form {
   }
   startRecording() {
     this.audio.pause();
-    this.file = null;
-    if (this.fileURL) URL.revokeObjectURL(this.fileURL);
-    this.fileURL = null;
+    this.blob = null;
+    if (this.blobURL) URL.revokeObjectURL(this.blobURL);
+    this.blobURL = null;
     this.start = now();
     this.updateTime();
     this.recordBtn.style.display = "none";
@@ -378,7 +378,7 @@ let shown = false;
  * @param {Object=} opts - Options
  * @param {string=} opts.wasmURL - URL of the module ("vmsg.wasm" by default)
  * @param {number=} opts.pitch - Initial pitch shift ([-1, 1], 0 by default)
- * @return {Promise.<File>} A promise that contains recorded file when fulfilled.
+ * @return {Promise.<Blob>} A promise that contains recorded blob when fulfilled.
  */
 export function record(opts) {
   return new Promise((resolve, reject) => {

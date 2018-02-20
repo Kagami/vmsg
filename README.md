@@ -37,12 +37,12 @@ npm install vmsg --save
 import { record } from "vmsg";
 
 someButton.onclick = function() {
-  record(/* {wasmURL: "/path/to/vmsg.wasm"} */).then(file => {
-    console.log("Recorded MP3", file);
+  record(/* {wasmURL: "/path/to/vmsg.wasm"} */).then(blob => {
+    console.log("Recorded MP3", blob);
     // Can be used like this:
     //
     // const form = new FormData();
-    // form.append("file[]", file);
+    // form.append("file[]", blob, "record.mp3");
     // fetch("/upload.php", {
     //   credentials: "include",
     //   method: "POST",

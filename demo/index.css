@@ -63,14 +63,14 @@ a {
   user-select: none;
 }
 
-.comment__file {
+.comment__record {
   font-size: 20px;
   line-height: 17px;
   color: #00f;
   cursor: pointer;
 }
 
-.comment__file:hover {
+.comment__record:hover {
   color: #f00;
 }
 
@@ -104,7 +104,7 @@ a {
   cursor: default;
 }
 
-.reply-file {
+.reply-record {
   cursor: default;
   user-select: none;
 }
