@@ -292,7 +292,8 @@ class Form {
       return Promise.reject(err);
     }
     return navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
-      const audioCtx = this.audioCtx = new AudioContext();
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = this.audioCtx = new Ctx();
 
       const sourceNode = audioCtx.createMediaStreamSource(stream);
       const gainNode = this.gainNode = audioCtx.createGain();
