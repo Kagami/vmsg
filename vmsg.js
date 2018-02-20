@@ -182,7 +182,7 @@ class Form {
     const stopBtn = this.stopBtn = document.createElement("button");
     stopBtn.className = "vmsg-button vmsg-stop-button";
     stopBtn.style.display = "none";
-    stopBtn.textContent = "◼";
+    stopBtn.textContent = "■";
     stopBtn.addEventListener("click", () => this.stopRecording());
     recordRow.appendChild(stopBtn);
 
