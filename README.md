@@ -24,9 +24,6 @@ with a few clicks.
 * Safari 11+
 * Edge 16+
 
-Note that this haven't been extensively tested yet. Feel free to open
-issue in case of any errors.
-
 ## Usage
 
 ```
