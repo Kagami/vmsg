@@ -287,7 +287,7 @@ class Form {
   //                                                  |
   //                                                  -> [worker]
   initAudio() {
-    if (!navigator.mediaDevices.getUserMedia) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       const err = new Error("getUserMedia is not implemented in this browser");
       return Promise.reject(err);
     }
