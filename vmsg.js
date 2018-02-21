@@ -287,20 +287,32 @@ class Form {
   //                                                  |
   //                                                  -> [worker]
   initAudio() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      const err = new Error("getUserMedia is not implemented in this browser");
-      return Promise.reject(err);
-    }
-    return navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      const audioCtx = this.audioCtx = new Ctx();
+    const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+      ? function(constraints) {
+          return navigator.mediaDevices.getUserMedia(constraints);
+        }
+      : function(constraints) {
+          const oldGetUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+          if (!oldGetUserMedia) {
+            return Promise.reject(new Error("getUserMedia is not implemented in this browser"));
+          }
+          return new Promise(function(resolve, reject) {
+            oldGetUserMedia.call(navigator, constraints, resolve, reject);
+          });
+        };
+
+    return getUserMedia({audio: true}).then(stream => {
+      const audioCtx = this.audioCtx = new (window.AudioContext
+        || window.webkitAudioContext)();
 
       const sourceNode = audioCtx.createMediaStreamSource(stream);
-      const gainNode = this.gainNode = audioCtx.createGain();
+      const gainNode = this.gainNode = (audioCtx.createGain
+        || audioCtx.createGainNode).call(audioCtx);
       sourceNode.connect(gainNode);
 
       const pitchFX = this.pitchFX = new Jungle(audioCtx);
-      const encNode = this.encNode = audioCtx.createScriptProcessor(0, 1, 1);
+      const encNode = this.encNode = (audioCtx.createScriptProcessor
+        || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
       encNode.onaudioprocess = (e) => {
         const samples = e.inputBuffer.getChannelData(0);
         this.worker.postMessage({type: "data", data: samples});
@@ -495,8 +507,8 @@ function createDelayTimeBuffer(context, activeTime, fadeTime, shiftUp) {
 function Jungle(context) {
   this.context = context;
   // Create nodes for the input and output of this "module".
-  var input = context.createGain();
-  var output = context.createGain();
+  var input = (context.createGain || context.createGainNode).call(context);
+  var output = (context.createGain || context.createGainNode).call(context);
   this.input = input;
   this.output = output;
 
@@ -517,11 +529,11 @@ function Jungle(context) {
   mod4.loop = true;
 
   // for switching between oct-up and oct-down
-  var mod1Gain = context.createGain();
-  var mod2Gain = context.createGain();
-  var mod3Gain = context.createGain();
+  var mod1Gain = (context.createGain || context.createGainNode).call(context);
+  var mod2Gain = (context.createGain || context.createGainNode).call(context);
+  var mod3Gain = (context.createGain || context.createGainNode).call(context);
   mod3Gain.gain.value = 0;
-  var mod4Gain = context.createGain();
+  var mod4Gain = (context.createGain || context.createGainNode).call(context);
   mod4Gain.gain.value = 0;
 
   mod1.connect(mod1Gain);
@@ -530,11 +542,11 @@ function Jungle(context) {
   mod4.connect(mod4Gain);
 
   // Delay amount for changing pitch.
-  var modGain1 = context.createGain();
-  var modGain2 = context.createGain();
+  var modGain1 = (context.createGain || context.createGainNode).call(context);
+  var modGain2 = (context.createGain || context.createGainNode).call(context);
 
-  var delay1 = context.createDelay();
-  var delay2 = context.createDelay();
+  var delay1 = (context.createDelay || context.createDelayNode).call(context);
+  var delay2 = (context.createDelay || context.createDelayNode).call(context);
   mod1Gain.connect(modGain1);
   mod2Gain.connect(modGain2);
   mod3Gain.connect(modGain1);
@@ -551,8 +563,8 @@ function Jungle(context) {
   fade1.loop = true;
   fade2.loop = true;
 
-  var mix1 = context.createGain();
-  var mix2 = context.createGain();
+  var mix1 = (context.createGain || context.createGainNode).call(context);
+  var mix2 = (context.createGain || context.createGainNode).call(context);
   mix1.gain.value = 0;
   mix2.gain.value = 0;
 
