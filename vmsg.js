@@ -313,10 +313,6 @@ class Form {
       const pitchFX = this.pitchFX = new Jungle(audioCtx);
       const encNode = this.encNode = (audioCtx.createScriptProcessor
         || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
-      encNode.onaudioprocess = (e) => {
-        const samples = e.inputBuffer.getChannelData(0);
-        this.worker.postMessage({type: "data", data: samples});
-      };
       pitchFX.output.connect(encNode);
     });
   }
@@ -366,6 +362,10 @@ class Form {
     this.stopBtn.style.display = "";
     this.saveBtn.disabled = true;
     this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
+    this.encNode.onaudioprocess = (e) => {
+      const samples = e.inputBuffer.getChannelData(0);
+      this.worker.postMessage({type: "data", data: samples});
+    };
     this.encNode.connect(this.audioCtx.destination);
   }
   stopRecording() {
@@ -373,6 +373,7 @@ class Form {
     this.tid = 0;
     this.stopBtn.disabled = true;
     this.encNode.disconnect();
+    this.encNode.onaudioprocess = null;
     this.worker.postMessage({type: "stop", data: null});
   }
   updateTime() {
