@@ -19,10 +19,10 @@ with a few clicks.
 
 ## Supported browsers
 
-* Chrome 57+
-* Firefox 53+
+* Chrome 32+
+* Firefox 27+
 * Safari 11+
-* Edge 16+
+* Edge 12+
 
 ## Usage
 
@@ -54,6 +54,9 @@ That's it! Don't forget to include [vmsg.css](vmsg.css) and
 [vmsg.wasm](vmsg.wasm) in your project.
 
 See also [demo](demo) directory for a more feasible example.
+
+**Note:** for browsers without WebAssembly support you need to also
+include [this polyfill](https://github.com/Kagami/wasm-polyfill.js).
 
 ## Development
 
