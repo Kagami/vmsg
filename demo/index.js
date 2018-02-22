@@ -118,10 +118,12 @@ class Reply extends React.Component {
     this.setState({body: e.target.value});
   };
   handleRecord = () => {
-    vmsg.record({wasmURL: require("../vmsg.wasm")})
-      .then(record => {
-        this.setState({record});
-      });
+    vmsg.record({
+      wasmURL: require("../vmsg.wasm"),
+      shimURL: "https://unpkg.com/wasm-polyfill.js@0.2.0/wasm-polyfill.js",
+    }).then(record => {
+      this.setState({record});
+    });
   };
   handleSend = () => {
     const { body, record } = this.state;

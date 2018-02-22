@@ -24,10 +24,7 @@ function inlineWorker() {
   const TOTAL_STACK = 5 * 1024 * 1024;
   const TOTAL_MEMORY = 16 * 1024 * 1024;
   const WASM_PAGE_SIZE = 64 * 1024;
-  const memory = new WebAssembly.Memory({
-    initial: TOTAL_MEMORY / WASM_PAGE_SIZE,
-    maximum: TOTAL_MEMORY / WASM_PAGE_SIZE,
-  });
+  let memory = null;
   let dynamicTop = TOTAL_STACK;
   // TODO(Kagami): Grow memory?
   function sbrk(increment) {
@@ -41,18 +38,6 @@ function inlineWorker() {
   function exit(status) {
     postMessage({type: "internal-error", data: status});
   }
-  const Runtime = {
-    memory: memory,
-    pow: Math.pow,
-    exit: exit,
-    powf: Math.pow,
-    exp: Math.exp,
-    sqrtf: Math.sqrt,
-    cos: Math.cos,
-    log: Math.log,
-    sin: Math.sin,
-    sbrk: sbrk,
-  };
 
   let FFI = null;
   let ref = null;
@@ -84,10 +69,33 @@ function inlineWorker() {
     const msg = e.data;
     switch (msg.type) {
     case "init":
-      fetchAndInstantiate(msg.data, {env: Runtime}).then(wasm => {
+      const { wasmURL, shimURL } = msg.data;
+      Promise.resolve().then(() => {
+        if (!self.WebAssembly) {
+          importScripts(shimURL);
+        }
+        memory = new WebAssembly.Memory({
+          initial: TOTAL_MEMORY / WASM_PAGE_SIZE,
+          maximum: TOTAL_MEMORY / WASM_PAGE_SIZE,
+        });
+        return {
+          memory: memory,
+          pow: Math.pow,
+          exit: exit,
+          powf: Math.pow,
+          exp: Math.exp,
+          sqrtf: Math.sqrt,
+          cos: Math.cos,
+          log: Math.log,
+          sin: Math.sin,
+          sbrk: sbrk,
+        };
+      }).then(Runtime => {
+        return fetchAndInstantiate(wasmURL, {env: Runtime})
+      }).then(wasm => {
         FFI = wasm.instance.exports;
         postMessage({type: "init", data: null});
-      }, err => {
+      }).catch(err => {
         postMessage({type: "init-error", data: err.toString()});
       });
       break;
@@ -111,6 +119,7 @@ class Form {
     // Can't use relative URL in blob worker, see:
     // https://stackoverflow.com/a/22582695
     this.wasmURL = new URL(opts.wasmURL || "/static/js/vmsg.wasm", location).href;
+    this.shimURL = new URL(opts.shimURL || "/static/js/wasm-polyfill.js", location).href;
     this.pitch = opts.pitch || 0;
     this.resolve = resolve;
     this.reject = reject;
@@ -323,7 +332,8 @@ class Form {
       {type: "application/javascript"});
     const workerURL = this.workerURL = URL.createObjectURL(blob);
     const worker = this.worker = new Worker(workerURL);
-    worker.postMessage({type: "init", data: this.wasmURL});
+    const { wasmURL, shimURL } = this;
+    worker.postMessage({type: "init", data: {wasmURL, shimURL}});
     return new Promise((resolve, reject) => {
       worker.onmessage = (e) => {
         const msg = e.data;
@@ -390,7 +400,10 @@ let shown = false;
  * Record a new voice message.
  *
  * @param {Object=} opts - Options
- * @param {string=} opts.wasmURL - URL of the module ("/static/js/vmsg.wasm" by default)
+ * @param {string=} opts.wasmURL - URL of the module
+ *                                 ("/static/js/vmsg.wasm" by default)
+ * @param {string=} opts.shimURL - URL of the WebAssembly polyfill
+ *                                 ("/static/js/wasm-polyfill.js" by default)
  * @param {number=} opts.pitch - Initial pitch shift ([-1, 1], 0 by default)
  * @return {Promise.<Blob>} A promise that contains recorded blob when fulfilled.
  */
