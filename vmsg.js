@@ -409,6 +409,11 @@ export function record(opts) {
   });
 }
 
+/**
+ * All available public items.
+ */
+export default { record };
+
 // Borrowed from and slightly modified:
 // https://github.com/cwilso/Audio-Input-Effects/blob/master/js/jungle.js
 

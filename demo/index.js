@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import * as vmsg from "..";
+import vmsg from "..";
 
 // https://github.com/parcel-bundler/parcel/issues/289
 if (module.hot) {
