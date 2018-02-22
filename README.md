@@ -92,6 +92,14 @@ Worker code is included in the main JS module so end-user has to care
 only about 3 files: `vmsg.js`, `vmsg.css` and `vmsg.wasm`. CSS can be
 inlined too but IMO that would be ugly.
 
+In order to support browsers without WebAssembly,
+[WebAssembly polyfill](https://github.com/Kagami/wasm-polyfill.js) is
+being used. It translates binary module into semantically-equivalent
+JavaScript on the fly (almost asm.js compatible but doesn't fully
+validate yet) so we don't need separate asm.js build and can use
+standard WebAssembly API. It's not as effecient but for audio encoding
+should be enough.
+
 ## Why not MediaRecorder?
 
 [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API)
