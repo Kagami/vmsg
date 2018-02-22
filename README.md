@@ -51,12 +51,11 @@ someButton.onclick = function() {
 ```
 
 That's it! Don't forget to include [vmsg.css](vmsg.css) and
-[vmsg.wasm](vmsg.wasm) in your project.
+[vmsg.wasm](vmsg.wasm) in your project. For browsers without WebAssembly
+support you need to also include
+[wasm-polyfill.js](https://github.com/Kagami/wasm-polyfill.js).
 
-See also [demo](demo) directory for a more feasible example.
-
-**Note:** for browsers without WebAssembly support you need to also
-include [this polyfill](https://github.com/Kagami/wasm-polyfill.js).
+See [demo](demo) directory for a more feasible example.
 
 ## Development
 
