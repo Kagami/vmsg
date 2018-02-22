@@ -68,7 +68,10 @@ class Comment extends React.Component {
     const a = document.createElement("a");
     a.href = this.audio.src;
     a.download = "record.mp3";
+    a.style.display = "none";
+    document.body.appendChild(a);
     a.click();
+    a.remove();
   };
   render() {
     const { id, body } = this.props;
