@@ -34,7 +34,7 @@ npm install vmsg --save
 import { record } from "vmsg";
 
 someButton.onclick = function() {
-  record(/* {wasmURL: "/path/to/vmsg.wasm"} */).then(blob => {
+  record(/* {wasmURL: "/static/js/vmsg.wasm"} */).then(blob => {
     console.log("Recorded MP3", blob);
     // Can be used like this:
     //

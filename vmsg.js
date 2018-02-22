@@ -110,7 +110,7 @@ class Form {
   constructor(opts = {}, resolve, reject) {
     // Can't use relative URL in blob worker, see:
     // https://stackoverflow.com/a/22582695
-    this.wasmURL = new URL(opts.wasmURL || "vmsg.wasm", location).href;
+    this.wasmURL = new URL(opts.wasmURL || "/static/js/vmsg.wasm", location).href;
     this.pitch = opts.pitch || 0;
     this.resolve = resolve;
     this.reject = reject;
@@ -390,7 +390,7 @@ let shown = false;
  * Record a new voice message.
  *
  * @param {Object=} opts - Options
- * @param {string=} opts.wasmURL - URL of the module ("vmsg.wasm" by default)
+ * @param {string=} opts.wasmURL - URL of the module ("/static/js/vmsg.wasm" by default)
  * @param {number=} opts.pitch - Initial pitch shift ([-1, 1], 0 by default)
  * @return {Promise.<Blob>} A promise that contains recorded blob when fulfilled.
  */
