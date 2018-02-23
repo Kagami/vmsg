@@ -1,7 +1,7 @@
 # vmsg [![npm](https://img.shields.io/npm/v/vmsg.svg)](https://www.npmjs.com/package/vmsg)
 
 vmsg is a small library for creating voice messages. While traditional
-way of communication on the web is via text, sometimes it's easier or
+way of communicating on the web is via text, sometimes it's easier or
 rather funnier to express your thoughts just by saying it. Of course it
 doesn't require any special support: record your voice with some
 standard program, upload to file hosting and share the link. But why
