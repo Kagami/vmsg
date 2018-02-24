@@ -285,6 +285,7 @@ class Form {
   close(blob) {
     if (this.audio) this.audio.pause();
     if (this.encNode) this.encNode.disconnect();
+    if (this.encNode) this.encNode.onaudioprocess = null;
     if (this.audioCtx) this.audioCtx.close();
     if (this.worker) this.worker.terminate();
     if (this.workerURL) URL.revokeObjectURL(this.workerURL);
