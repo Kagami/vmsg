@@ -100,6 +100,8 @@ validate yet) so we don't need separate asm.js build and can use
 standard WebAssembly API. It's not as effecient but for audio encoding
 should be enough.
 
+**See also:** [Creating WebAssembly-powered library for modern web](https://hackernoon.com/creating-webassembly-powered-library-for-modern-web-846da334f8fc) article.
+
 ## Why not MediaRecorder?
 
 [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API)
