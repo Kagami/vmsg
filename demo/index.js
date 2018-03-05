@@ -66,6 +66,10 @@ class Comment extends React.Component {
   };
   handleRecordClick = () => {
     const a = document.createElement("a");
+    if (!("download" in a)) {
+      window.open(this.audio.src);
+      return;
+    }
     a.href = this.audio.src;
     a.download = "record.mp3";
     a.style.display = "none";
