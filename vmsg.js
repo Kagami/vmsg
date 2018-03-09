@@ -155,8 +155,8 @@ class Recorder {
     this.workerURL = null;
     this.blob = null;
     this.blobURL = null;
-    this._resolve = null;
-    this._reject = null;
+    this.resolve = null;
+    this.reject = null;
     Object.seal(this);
   }
 
@@ -237,13 +237,13 @@ class Recorder {
         case "error":
         case "internal-error":
           console.error("Worker error:", msg.data);
-          if (this._reject) this._reject(msg.data);
+          if (this.reject) this.reject(msg.data);
           break;
         case "stop":
           this.blob = msg.data;
           this.blobURL = URL.createObjectURL(msg.data);
           if (this.onStop) this.onStop();
-          if (this._resolve) this._resolve(this.blob);
+          if (this.resolve) this.resolve(this.blob);
           break;
         }
       }
@@ -269,17 +269,17 @@ class Recorder {
         this.encNode.onaudioprocess = null;
       }
 
-      this._resolve = resolve
-      this._reject = reject
+      this.resolve = resolve;
+      this.reject = reject;
     });
 
     if (this.worker) {
       this.worker.postMessage({type: "stop", data: null});
     } else {
-      return Promise.resolve(this.blob)
+      return Promise.resolve(this.blob);
     }
 
-    return resultP
+    return resultP;
   }
 }
 
@@ -477,7 +477,6 @@ class Form {
     this.tid = setTimeout(() => this.updateTime(), 300);
   }
 }
-
 
 let shown = false;
 
