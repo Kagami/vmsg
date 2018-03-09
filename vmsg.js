@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 function pad2(n) {
   n |= 0;
   return n < 10 ? `0${n}` : `${Math.min(n, 99)}`;
@@ -137,13 +139,145 @@ function inlineWorker() {
   };
 }
 
-class Form {
-  constructor(opts = {}, resolve, reject) {
+class Recorder {
+  constructor(opts = {}, onStop) {
     // Can't use relative URL in blob worker, see:
     // https://stackoverflow.com/a/22582695
     this.wasmURL = new URL(opts.wasmURL || "/static/js/vmsg.wasm", location).href;
     this.shimURL = new URL(opts.shimURL || "/static/js/wasm-polyfill.js", location).href;
+    this.onStop = onStop;
     this.pitch = opts.pitch || 0;
+    this.audioCtx = null;
+    this.gainNode = null;
+    this.pitchFX = null;
+    this.encNode = null;
+    this.worker = null;
+    this.workerURL = null;
+    this.blob = null;
+    this.blobURL = null;
+    this._resolve = null;
+    this._reject = null;
+    Object.seal(this);
+  }
+
+  close() {
+    if (this.encNode) this.encNode.disconnect();
+    if (this.encNode) this.encNode.onaudioprocess = null;
+    if (this.audioCtx) this.audioCtx.close();
+    if (this.worker) this.worker.terminate();
+    if (this.workerURL) URL.revokeObjectURL(this.workerURL);
+    if (this.blobURL) URL.revokeObjectURL(this.blobURL);
+  }
+
+  // Without pitch shift:
+  //   [sourceNode] -> [gainNode] -> [encNode] -> [audioCtx.destination]
+  //                                     |
+  //                                     -> [worker]
+  // With pitch shift:
+  //   [sourceNode] -> [gainNode] -> [pitchFX] -> [encNode] -> [audioCtx.destination]
+  //                                                  |
+  //                                                  -> [worker]
+  init() {
+    const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+      ? function(constraints) {
+          return navigator.mediaDevices.getUserMedia(constraints);
+        }
+      : function(constraints) {
+          const oldGetUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+          if (!oldGetUserMedia) {
+            return Promise.reject(new Error("getUserMedia is not implemented in this browser"));
+          }
+          return new Promise(function(resolve, reject) {
+            oldGetUserMedia.call(navigator, constraints, resolve, reject);
+          });
+        };
+
+    return getUserMedia({audio: true})
+      .then(stream => {
+        const audioCtx = this.audioCtx = new (window.AudioContext
+          || window.webkitAudioContext)();
+
+        const sourceNode = audioCtx.createMediaStreamSource(stream);
+        const gainNode = this.gainNode = (audioCtx.createGain
+          || audioCtx.createGainNode).call(audioCtx);
+        this.gainNode.gain.value = 1.0;
+        sourceNode.connect(gainNode);
+
+        const pitchFX = this.pitchFX = new Jungle(audioCtx);
+        this.pitchFX.setPitchOffset(this.pitch);
+        const encNode = this.encNode = (audioCtx.createScriptProcessor
+          || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
+
+        gainNode.connect(pitchFX.input);
+        pitchFX.output.connect(encNode);
+      })
+      .then(() => this.initWorker());
+  }
+
+  initWorker() {
+    // https://stackoverflow.com/a/19201292
+    const blob = new Blob(
+      ["(", inlineWorker.toString(), ")()"],
+      {type: "application/javascript"});
+    const workerURL = this.workerURL = URL.createObjectURL(blob);
+    const worker = this.worker = new Worker(workerURL);
+    const { wasmURL, shimURL } = this;
+    worker.postMessage({type: "init", data: {wasmURL, shimURL}});
+    return new Promise((resolve, reject) => {
+      worker.onmessage = (e) => {
+        const msg = e.data;
+        switch (msg.type) {
+        case "init":
+          resolve();
+          break;
+        case "init-error":
+          reject(new Error(msg.data));
+          break;
+        // TODO(Kagami): Error handling.
+        case "error":
+        case "internal-error":
+          console.error("Worker error:", msg.data);
+          if (this._reject) this._reject(msg.data);
+          break;
+        case "stop":
+          this.blob = msg.data;
+          this.blobURL = URL.createObjectURL(msg.data);
+          if (this.onStop) this.onStop();
+          if (this._resolve) this._resolve(this.blob);
+          break;
+        }
+      }
+    });
+  }
+
+  startRecording() {
+    this.blob = null;
+    if (this.blobURL) URL.revokeObjectURL(this.blobURL);
+    this.blobURL = null;
+    this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
+    this.encNode.onaudioprocess = (e) => {
+      const samples = e.inputBuffer.getChannelData(0);
+      this.worker.postMessage({type: "data", data: samples});
+    };
+    this.encNode.connect(this.audioCtx.destination);
+  }
+
+  stopRecording() {
+    const resultP = new Promise((resolve, reject) => {
+      this.encNode.disconnect();
+      this.encNode.onaudioprocess = null;
+      this._resolve = resolve
+      this._reject = reject
+    });
+
+    this.worker.postMessage({type: "stop", data: null});
+    return resultP
+  }
+}
+
+class Form {
+  constructor(opts = {}, resolve, reject) {
+    this.recorder = new Recorder(opts, this.onStop.bind(this));
     this.resolve = resolve;
     this.reject = reject;
     this.backdrop = null;
@@ -153,24 +287,16 @@ class Form {
     this.timer = null;
     this.audio = null;
     this.saveBtn = null;
-    this.audioCtx = null;
-    this.gainNode = null;
-    this.pitchFX = null;
-    this.encNode = null;
-    this.worker = null;
-    this.workerURL = null;
-    this.blob = null;
-    this.blobURL = null;
     this.tid = 0;
     this.start = 0;
     Object.seal(this);
 
-    this.initAudio()
+    this.recorder.init()
       .then(() => this.drawInit())
-      .then((module) => this.initWorker(module))
       .then(() => this.drawAll())
       .catch((err) => this.drawError(err));
   }
+
   drawInit() {
     if (this.backdrop) return;
     const backdrop = this.backdrop = document.createElement("div");
@@ -193,10 +319,12 @@ class Form {
     backdrop.appendChild(popup);
     document.body.appendChild(backdrop);
   }
+
   drawTime(msecs) {
     const secs = Math.round(msecs / 1000);
     this.timer.textContent = pad2(secs / 60) + ":" + pad2(secs % 60);
   }
+
   drawAll() {
     this.drawInit();
     this.clearAll();
@@ -225,8 +353,8 @@ class Form {
     timer.className = "vmsg-timer";
     timer.addEventListener("click", () => {
       if (audio.paused) {
-        if (this.blobURL) {
-          audio.src = this.blobURL;
+        if (this.recorder.blobURL) {
+          audio.src = this.recorder.blobURL;
         }
       } else {
         audio.pause();
@@ -239,7 +367,7 @@ class Form {
     saveBtn.className = "vmsg-button vmsg-save-button";
     saveBtn.textContent = "✓";
     saveBtn.disabled = true;
-    saveBtn.addEventListener("click", () => this.close(this.blob));
+    saveBtn.addEventListener("click", () => this.close(this.recorder.blob));
     recordRow.appendChild(saveBtn);
 
     const gainWrapper = document.createElement("div");
@@ -253,7 +381,7 @@ class Form {
     gainSlider.value = 1;
     gainSlider.onchange = () => {
       const gain = +gainSlider.value;
-      this.gainNode.gain.value = gain;
+      this.recorder.gainNode.gain.value = gain;
     };
     gainSlider.onchange();
     gainWrapper.appendChild(gainSlider);
@@ -267,21 +395,22 @@ class Form {
     pitchSlider.min = -1;
     pitchSlider.max = 1;
     pitchSlider.step = 0.2;
-    pitchSlider.value = this.pitch;
+    pitchSlider.value = this.recorder.pitch;
     pitchSlider.onchange = () => {
       const pitch = +pitchSlider.value;
-      this.pitchFX.setPitchOffset(pitch);
-      this.gainNode.disconnect();
+      this.recorder.pitchFX.setPitchOffset(pitch);
+      this.recorder.gainNode.disconnect();
       if (pitch === 0) {
-        this.gainNode.connect(this.encNode);
+        this.recorder.gainNode.connect(this.recorder.encNode);
       } else {
-        this.gainNode.connect(this.pitchFX.input);
+        this.recorder.gainNode.connect(this.recorder.pitchFX.input);
       }
     };
     pitchSlider.onchange();
     pitchWrapper.appendChild(pitchSlider);
     this.popup.appendChild(pitchWrapper);
   }
+
   drawError(err) {
     console.error(err);
     this.drawInit();
@@ -291,19 +420,16 @@ class Form {
     error.textContent = err.toString();
     this.popup.appendChild(error);
   }
+
   clearAll() {
     if (!this.popup) return;
     this.popup.innerHTML = "";
   }
+
   close(blob) {
     if (this.audio) this.audio.pause();
-    if (this.encNode) this.encNode.disconnect();
-    if (this.encNode) this.encNode.onaudioprocess = null;
-    if (this.audioCtx) this.audioCtx.close();
-    if (this.worker) this.worker.terminate();
-    if (this.workerURL) URL.revokeObjectURL(this.workerURL);
-    if (this.blobURL) URL.revokeObjectURL(this.blobURL);
     if (this.tid) clearTimeout(this.tid);
+    this.recorder.close();
     this.backdrop.remove();
     if (blob) {
       this.resolve(blob);
@@ -311,105 +437,31 @@ class Form {
       this.reject(new Error("No record made"));
     }
   }
-  // Without pitch shift:
-  //   [sourceNode] -> [gainNode] -> [encNode] -> [audioCtx.destination]
-  //                                     |
-  //                                     -> [worker]
-  // With pitch shift:
-  //   [sourceNode] -> [gainNode] -> [pitchFX] -> [encNode] -> [audioCtx.destination]
-  //                                                  |
-  //                                                  -> [worker]
-  initAudio() {
-    const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia
-      ? function(constraints) {
-          return navigator.mediaDevices.getUserMedia(constraints);
-        }
-      : function(constraints) {
-          const oldGetUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-          if (!oldGetUserMedia) {
-            return Promise.reject(new Error("getUserMedia is not implemented in this browser"));
-          }
-          return new Promise(function(resolve, reject) {
-            oldGetUserMedia.call(navigator, constraints, resolve, reject);
-          });
-        };
 
-    return getUserMedia({audio: true}).then(stream => {
-      const audioCtx = this.audioCtx = new (window.AudioContext
-        || window.webkitAudioContext)();
-
-      const sourceNode = audioCtx.createMediaStreamSource(stream);
-      const gainNode = this.gainNode = (audioCtx.createGain
-        || audioCtx.createGainNode).call(audioCtx);
-      sourceNode.connect(gainNode);
-
-      const pitchFX = this.pitchFX = new Jungle(audioCtx);
-      const encNode = this.encNode = (audioCtx.createScriptProcessor
-        || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
-      pitchFX.output.connect(encNode);
-    });
+  onStop() {
+    this.recordBtn.style.display = "";
+    this.stopBtn.style.display = "none";
+    this.stopBtn.disabled = false;
+    this.saveBtn.disabled = false;
   }
-  initWorker(module) {
-    // https://stackoverflow.com/a/19201292
-    const blob = new Blob(
-      ["(", inlineWorker.toString(), ")()"],
-      {type: "application/javascript"});
-    const workerURL = this.workerURL = URL.createObjectURL(blob);
-    const worker = this.worker = new Worker(workerURL);
-    const { wasmURL, shimURL } = this;
-    worker.postMessage({type: "init", data: {wasmURL, shimURL}});
-    return new Promise((resolve, reject) => {
-      worker.onmessage = (e) => {
-        const msg = e.data;
-        switch (msg.type) {
-        case "init":
-          resolve();
-          break;
-        case "init-error":
-          reject(new Error(msg.data));
-          break;
-        // TODO(Kagami): Error handling.
-        case "error":
-        case "internal-error":
-          console.error("Worker error:", msg.data);
-          break;
-        case "stop":
-          this.blob = msg.data;
-          this.blobURL = URL.createObjectURL(msg.data);
-          this.recordBtn.style.display = "";
-          this.stopBtn.style.display = "none";
-          this.stopBtn.disabled = false;
-          this.saveBtn.disabled = false;
-          break;
-        }
-      }
-    });
-  }
+
   startRecording() {
     this.audio.pause();
-    this.blob = null;
-    if (this.blobURL) URL.revokeObjectURL(this.blobURL);
-    this.blobURL = null;
+    this.recorder.startRecording();
     this.start = now();
     this.updateTime();
     this.recordBtn.style.display = "none";
     this.stopBtn.style.display = "";
     this.saveBtn.disabled = true;
-    this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
-    this.encNode.onaudioprocess = (e) => {
-      const samples = e.inputBuffer.getChannelData(0);
-      this.worker.postMessage({type: "data", data: samples});
-    };
-    this.encNode.connect(this.audioCtx.destination);
   }
+
   stopRecording() {
     clearTimeout(this.tid);
     this.tid = 0;
     this.stopBtn.disabled = true;
-    this.encNode.disconnect();
-    this.encNode.onaudioprocess = null;
-    this.worker.postMessage({type: "stop", data: null});
+    this.recorder.stopRecording();
   }
+
   updateTime() {
     // NOTE(Kagami): We can do this in `onaudioprocess` but that would
     // run too often and create unnecessary DOM updates.
@@ -417,6 +469,7 @@ class Form {
     this.tid = setTimeout(() => this.updateTime(), 300);
   }
 }
+
 
 let shown = false;
 
@@ -449,7 +502,7 @@ export function record(opts) {
 /**
  * All available public items.
  */
-export default { record };
+export default { record, Recorder };
 
 // Borrowed from and slightly modified:
 // https://github.com/cwilso/Audio-Input-Effects/blob/master/js/jungle.js
