@@ -302,9 +302,9 @@ class Form {
     this.start = 0;
     Object.seal(this);
 
+    this.drawInit();
     this.recorder.initAudio()
       .then(() => this.recorder.initWorker())
-      .then(() => this.drawInit())
       .then(() => this.drawAll())
       .catch((err) => this.drawError(err));
   }
