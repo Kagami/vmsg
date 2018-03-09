@@ -177,7 +177,7 @@ class Recorder {
   //   [sourceNode] -> [gainNode] -> [pitchFX] -> [encNode] -> [audioCtx.destination]
   //                                                  |
   //                                                  -> [worker]
-  init() {
+  initAudio() {
     const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia
       ? function(constraints) {
           return navigator.mediaDevices.getUserMedia(constraints);
@@ -210,11 +210,12 @@ class Recorder {
 
         gainNode.connect(pitchFX.input);
         pitchFX.output.connect(encNode);
-      })
-      .then(() => this.initWorker());
+        return stream;
+      });
   }
 
   initWorker() {
+    if (!this.audioCtx) throw new Error("missing audio initialization");
     // https://stackoverflow.com/a/19201292
     const blob = new Blob(
       ["(", inlineWorker.toString(), ")()"],
@@ -251,6 +252,8 @@ class Recorder {
   }
 
   startRecording() {
+    if (!this.audioCtx) throw new Error("missing audio initialization");
+    if (!this.worker) throw new Error("missing worker initialization");
     this.blob = null;
     if (this.blobURL) URL.revokeObjectURL(this.blobURL);
     this.blobURL = null;
@@ -299,7 +302,8 @@ class Form {
     this.start = 0;
     Object.seal(this);
 
-    this.recorder.init()
+    this.recorder.initAudio()
+      .then(() => this.recorder.initWorker())
       .then(() => this.drawInit())
       .then(() => this.drawAll())
       .catch((err) => this.drawError(err));
