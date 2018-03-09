@@ -264,13 +264,21 @@ class Recorder {
 
   stopRecording() {
     const resultP = new Promise((resolve, reject) => {
-      this.encNode.disconnect();
-      this.encNode.onaudioprocess = null;
+      if (this.encNode) {
+        this.encNode.disconnect();
+        this.encNode.onaudioprocess = null;
+      }
+
       this._resolve = resolve
       this._reject = reject
     });
 
-    this.worker.postMessage({type: "stop", data: null});
+    if (this.worker) {
+      this.worker.postMessage({type: "stop", data: null});
+    } else {
+      return Promise.resolve(this.blob)
+    }
+
     return resultP
   }
 }
