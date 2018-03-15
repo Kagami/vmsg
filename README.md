@@ -57,7 +57,7 @@ support you need to also include
 
 See [demo](demo) directory for a more feasible example.
 
-A minimal React example for using Recorder with your own UI can be found [here](https://codesandbox.io/s/v67oz43lm70).
+A minimal React example for using Recorder with your own UI can be found [here](https://codesandbox.io/s/v67oz43lm7).
 
 ## Development
 
