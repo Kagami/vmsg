@@ -1,6 +1,6 @@
 {
   "name": "vmsg",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Library for creating voice messages",
   "main": "vmsg.js",
   "scripts": {
