@@ -2,3 +2,4 @@
 /dist/
 /.cache/
 /_vmsg.*
+/vmsg.es5.js

@@ -5,6 +5,7 @@
   "main": "vmsg.js",
   "scripts": {
     "start": "parcel demo/index.html",
+    "prepare": "babel vmsg.js -o vmsg.es5.js",
     "demo": "D=`mktemp -d` && parcel build demo/index.html --out-dir \"$D\" --public-url ./ && git checkout gh-pages && rm `git ls-files *` && mv \"$D\"/* . && rmdir \"$D\" && git add -A && git commit -m 'Update demo'"
   },
   "repository": {
@@ -30,6 +31,7 @@
   ],
   "devDependencies": {
     "autoprefixer": "^8.0.0",
+    "babel-cli": "^6.26.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "parcel-bundler": "^1.6.2",
