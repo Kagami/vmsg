@@ -5,10 +5,6 @@ function pad2(n) {
   return n < 10 ? `0${n}` : `${Math.min(n, 99)}`;
 }
 
-function now() {
-  return (new Date()).getTime();
-}
-
 function inlineWorker() {
   // TODO(Kagami): Cache compiled module in IndexedDB? It works in FF
   // and Edge, see: https://github.com/mdn/webassembly-examples/issues/4
@@ -460,7 +456,7 @@ export class Form {
   startRecording() {
     this.audio.pause();
     this.recorder.startRecording();
-    this.start = now();
+    this.start = Date.now();
     this.updateTime();
     this.recordBtn.style.display = "none";
     this.stopBtn.style.display = "";
@@ -477,7 +473,7 @@ export class Form {
   updateTime() {
     // NOTE(Kagami): We can do this in `onaudioprocess` but that would
     // run too often and create unnecessary DOM updates.
-    this.drawTime(now() - this.start);
+    this.drawTime(Date.now() - this.start);
     this.tid = setTimeout(() => this.updateTime(), 300);
   }
 }
