@@ -188,26 +188,24 @@ export class Recorder {
           });
         };
 
-    return getUserMedia({audio: true})
-      .then(stream => {
-        const audioCtx = this.audioCtx = new (window.AudioContext
-          || window.webkitAudioContext)();
+    return getUserMedia({audio: true}).then(stream => {
+      const audioCtx = this.audioCtx = new (window.AudioContext
+        || window.webkitAudioContext)();
 
-        const sourceNode = audioCtx.createMediaStreamSource(stream);
-        const gainNode = this.gainNode = (audioCtx.createGain
-          || audioCtx.createGainNode).call(audioCtx);
-        this.gainNode.gain.value = 1.0;
-        sourceNode.connect(gainNode);
+      const sourceNode = audioCtx.createMediaStreamSource(stream);
+      const gainNode = this.gainNode = (audioCtx.createGain
+        || audioCtx.createGainNode).call(audioCtx);
+      this.gainNode.gain.value = 1.0;
+      sourceNode.connect(gainNode);
 
-        const pitchFX = this.pitchFX = new Jungle(audioCtx);
-        this.pitchFX.setPitchOffset(this.pitch);
-        const encNode = this.encNode = (audioCtx.createScriptProcessor
-          || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
+      const pitchFX = this.pitchFX = new Jungle(audioCtx);
+      this.pitchFX.setPitchOffset(this.pitch);
+      const encNode = this.encNode = (audioCtx.createScriptProcessor
+        || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
 
-        gainNode.connect(pitchFX.input);
-        pitchFX.output.connect(encNode);
-        return stream;
-      });
+      gainNode.connect(pitchFX.input);
+      pitchFX.output.connect(encNode);
+    });
   }
 
   initWorker() {
@@ -455,12 +453,12 @@ export class Form {
 
   startRecording() {
     this.audio.pause();
-    this.recorder.startRecording();
     this.start = Date.now();
     this.updateTime();
     this.recordBtn.style.display = "none";
     this.stopBtn.style.display = "";
     this.saveBtn.disabled = true;
+    this.recorder.startRecording();
   }
 
   stopRecording() {
