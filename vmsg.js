@@ -195,15 +195,11 @@ export class Recorder {
       const sourceNode = audioCtx.createMediaStreamSource(stream);
       const gainNode = this.gainNode = (audioCtx.createGain
         || audioCtx.createGainNode).call(audioCtx);
-      this.gainNode.gain.value = 1.0;
       sourceNode.connect(gainNode);
 
       const pitchFX = this.pitchFX = new Jungle(audioCtx);
-      this.pitchFX.setPitchOffset(this.pitch);
       const encNode = this.encNode = (audioCtx.createScriptProcessor
         || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
-
-      gainNode.connect(pitchFX.input);
       pitchFX.output.connect(encNode);
     });
   }
