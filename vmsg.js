@@ -195,12 +195,17 @@ export class Recorder {
       const sourceNode = audioCtx.createMediaStreamSource(stream);
       const gainNode = this.gainNode = (audioCtx.createGain
         || audioCtx.createGainNode).call(audioCtx);
+      gainNode.gain.value = 1;
       sourceNode.connect(gainNode);
 
       const pitchFX = this.pitchFX = new Jungle(audioCtx);
+      pitchFX.setPitchOffset(this.pitch);
+
       const encNode = this.encNode = (audioCtx.createScriptProcessor
         || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
       pitchFX.output.connect(encNode);
+
+      gainNode.connect(this.pitch === 0 ? encNode : pitchFX.input);
     });
   }
 
@@ -385,7 +390,6 @@ export class Form {
       const gain = +gainSlider.value;
       this.recorder.gainNode.gain.value = gain;
     };
-    gainSlider.onchange();
     gainWrapper.appendChild(gainSlider);
     this.popup.appendChild(gainWrapper);
 
@@ -402,13 +406,10 @@ export class Form {
       const pitch = +pitchSlider.value;
       this.recorder.pitchFX.setPitchOffset(pitch);
       this.recorder.gainNode.disconnect();
-      if (pitch === 0) {
-        this.recorder.gainNode.connect(this.recorder.encNode);
-      } else {
-        this.recorder.gainNode.connect(this.recorder.pitchFX.input);
-      }
+      this.recorder.gainNode.connect(
+        pitch === 0 ? this.recorder.encNode : this.recorder.pitchFX.input
+      );
     };
-    pitchSlider.onchange();
     pitchWrapper.appendChild(pitchSlider);
     this.popup.appendChild(pitchWrapper);
   }
