@@ -11,21 +11,29 @@ function inlineWorker() {
   // Though gzipped WASM module currently weights ~70kb so it should be
   // perfectly cached by the browser itself.
   function fetchAndInstantiate(url, imports) {
-    if (WebAssembly.instantiateStreaming) {
-      const req = fetch(url, {credentials: "same-origin"});
-      return WebAssembly.instantiateStreaming(req, imports);
-    } else {
-      return new Promise((resolve, reject) => {
-        const req = new XMLHttpRequest();
-        req.open("GET", url);
-        req.responseType = "arraybuffer";
-        req.onload = () => {
-          resolve(WebAssembly.instantiate(req.response, imports));
-        };
-        req.onerror = reject;
-        req.send();
-      });
-    }
+    if (!WebAssembly.instantiateStreaming) return fetchAndInstantiateFallback(url, imports);
+    const req = fetch(url, {credentials: "same-origin"});
+    return WebAssembly.instantiateStreaming(req, imports).catch(err => {
+      // https://github.com/Kagami/vmsg/issues/11
+      if (err.message && err.message.indexOf("Argument 0 must be provided and must be a Response") > 0) {
+        return fetchAndInstantiateFallback(url, imports);
+      } else {
+        throw err;
+      }
+    });
+  }
+
+  function fetchAndInstantiateFallback(url, imports) {
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.open("GET", url);
+      req.responseType = "arraybuffer";
+      req.onload = () => {
+        resolve(WebAssembly.instantiate(req.response, imports));
+      };
+      req.onerror = reject;
+      req.send();
+    });
   }
 
   // Must be in sync with emcc settings!
