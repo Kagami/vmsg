@@ -59,6 +59,8 @@ See [demo](demo) directory for a more feasible example.
 
 A minimal React example for using Recorder with your own UI can be found [here](https://codesandbox.io/s/v67oz43lm7).
 
+See also [non React demo](https://github.com/addpipe/simple-vmsg-demo) and [Recording mp3 audio in HTML5 using vmsg](https://addpipe.com/blog/recording-mp3-audio-in-html5-using-vmsg-a-webassembly-library-based-on-lame/) article.
+
 ## Development
 
 1. Install [Emscripten SDK](https://github.com/juj/emsdk).
