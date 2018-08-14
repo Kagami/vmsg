@@ -144,7 +144,7 @@ function inlineWorker() {
 }
 
 export class Recorder {
-  constructor(opts = {}, onStop) {
+  constructor(opts = {}, onStop = null) {
     // Can't use relative URL in blob worker, see:
     // https://stackoverflow.com/a/22582695
     this.wasmURL = new URL(opts.wasmURL || "/static/js/vmsg.wasm", location).href;
@@ -197,11 +197,11 @@ export class Recorder {
           });
         };
 
-    return getUserMedia({audio: true}).then(stream => {
+    return getUserMedia({audio: true}).then((stream) => {
+      this.stream = stream;
       const audioCtx = this.audioCtx = new (window.AudioContext
         || window.webkitAudioContext)();
 
-      this.stream = stream;
       const sourceNode = audioCtx.createMediaStreamSource(stream);
       const gainNode = this.gainNode = (audioCtx.createGain
         || audioCtx.createGainNode).call(audioCtx);
@@ -220,7 +220,7 @@ export class Recorder {
   }
 
   initWorker() {
-    if (!this.audioCtx) throw new Error("missing audio initialization");
+    if (!this.stream) throw new Error("missing audio initialization");
     // https://stackoverflow.com/a/19201292
     const blob = new Blob(
       ["(", inlineWorker.toString(), ")()"],
@@ -256,12 +256,18 @@ export class Recorder {
     });
   }
 
+  init() {
+    return this.initAudio().then(this.initWorker.bind(this));
+  }
+
   startRecording() {
-    if (!this.audioCtx) throw new Error("missing audio initialization");
+    if (!this.stream) throw new Error("missing audio initialization");
     if (!this.worker) throw new Error("missing worker initialization");
     this.blob = null;
     if (this.blobURL) URL.revokeObjectURL(this.blobURL);
     this.blobURL = null;
+    this.resolve = null;
+    this.reject = null;
     this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
     this.encNode.onaudioprocess = (e) => {
       const samples = e.inputBuffer.getChannelData(0);
@@ -271,27 +277,20 @@ export class Recorder {
   }
 
   stopRecording() {
-    const resultP = new Promise((resolve, reject) => {
-      if (this.encNode) {
-        this.encNode.disconnect();
-        this.encNode.onaudioprocess = null;
-      }
-
+    if (!this.stream) throw new Error("missing audio initialization");
+    if (!this.worker) throw new Error("missing worker initialization");
+    this.encNode.disconnect();
+    this.encNode.onaudioprocess = null;
+    // Might be missed in Safari and old FF/Chrome per MDN.
+    if (this.stream.getTracks) {
+      // Hide browser's recording indicator.
+      this.stream.getTracks().forEach((track) => track.stop());
+    }
+    this.worker.postMessage({type: "stop", data: null});
+    return new Promise((resolve, reject) => {
       this.resolve = resolve;
       this.reject = reject;
     });
-
-    if (this.worker) {
-      this.worker.postMessage({type: "stop", data: null});
-    } else {
-      return Promise.resolve(this.blob);
-    }
-
-    if (this.stream && this.stream.getTracks()) {
-        this.stream.getTracks().forEach(track => track.stop())
-    }
-
-    return resultP;
   }
 }
 
