@@ -151,6 +151,7 @@ export class Recorder {
     this.shimURL = new URL(opts.shimURL || "/static/js/wasm-polyfill.js", location).href;
     this.onStop = onStop;
     this.pitch = opts.pitch || 0;
+    this.stream = null;
     this.audioCtx = null;
     this.gainNode = null;
     this.pitchFX = null;
@@ -200,6 +201,7 @@ export class Recorder {
       const audioCtx = this.audioCtx = new (window.AudioContext
         || window.webkitAudioContext)();
 
+      this.stream = stream;
       const sourceNode = audioCtx.createMediaStreamSource(stream);
       const gainNode = this.gainNode = (audioCtx.createGain
         || audioCtx.createGainNode).call(audioCtx);
@@ -283,6 +285,10 @@ export class Recorder {
       this.worker.postMessage({type: "stop", data: null});
     } else {
       return Promise.resolve(this.blob);
+    }
+
+    if (this.stream && this.stream.getTracks()) {
+        this.stream.getTracks().forEach(track => track.stop())
     }
 
     return resultP;
