@@ -35,8 +35,8 @@
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "parcel-bundler": "^1.9.7",
-    "parcel-plugin-disable-loaders": "^1.0.1",
+    "parcel-bundler": "1.7.1",
+    "parcel-plugin-disable-loaders": "^1.0.2",
     "react": "^16.5.0",
     "react-dom": "^16.5.0"
   }
