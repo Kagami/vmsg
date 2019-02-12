@@ -31,14 +31,14 @@
     "wasm"
   ],
   "devDependencies": {
-    "@babel/cli": "^7.1.5",
-    "@babel/core": "^7.1.5",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "@babel/preset-env": "^7.1.5",
-    "autoprefixer": "^9.3.1",
-    "parcel-bundler": "^1.10.3",
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.3.0",
+    "@babel/preset-env": "^7.3.1",
+    "autoprefixer": "^9.4.7",
+    "parcel-bundler": "^1.11.0",
     "parcel-plugin-disable-loaders": "^1.0.3",
-    "react": "^16.6.1",
-    "react-dom": "^16.6.1"
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1"
   }
 }
