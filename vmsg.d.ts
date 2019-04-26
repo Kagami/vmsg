@@ -4,6 +4,17 @@ declare module "vmsg" {
     shimURL?: string;
     pitch?: number;
   }
+
+  export class Recorder {
+    constructor(opts: RecordOptions);
+    stopRecording(): Promise<Blob>;
+    initAudio(): Promise<void>;
+    initWorker(): Promise<void>;
+    init(): Promise<void>;
+    startRecording(): void;
+    close(): void;
+  }
+
   interface Exports {
     record: (opts?: RecordOptions) => Promise<Blob>;
   }
