@@ -221,7 +221,6 @@ export class Recorder {
   }
 
   initWorker() {
-    if (!this.stream) throw new Error("missing audio initialization");
     // https://stackoverflow.com/a/19201292
     const blob = new Blob(
       ["(", inlineWorker.toString(), ")()"],
@@ -283,6 +282,7 @@ export class Recorder {
     this.encNode.disconnect();
     this.encNode.onaudioprocess = null;
     this.stopTracks();
+    this.audioCtx.close();
     this.worker.postMessage({type: "stop", data: null});
     return new Promise((resolve, reject) => {
       this.resolve = resolve;
