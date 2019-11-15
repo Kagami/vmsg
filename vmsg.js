@@ -170,7 +170,10 @@ export class Recorder {
     if (this.encNode) this.encNode.onaudioprocess = null;
     if (this.stream) this.stopTracks();
     if (this.audioCtx) this.audioCtx.close();
-    if (this.worker) this.worker.terminate();
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
     if (this.workerURL) URL.revokeObjectURL(this.workerURL);
     if (this.blobURL) URL.revokeObjectURL(this.blobURL);
   }
@@ -221,7 +224,7 @@ export class Recorder {
   }
 
   initWorker() {
-    if (!this.stream) throw new Error("missing audio initialization");
+    if (this.worker) return Promise.resolve();
     // https://stackoverflow.com/a/19201292
     const blob = new Blob(
       ["(", inlineWorker.toString(), ")()"],
@@ -238,11 +241,13 @@ export class Recorder {
           resolve();
           break;
         case "init-error":
+          this.close();
           reject(new Error(msg.data));
           break;
         // TODO(Kagami): Error handling.
         case "error":
         case "internal-error":
+          this.close();
           console.error("Worker error:", msg.data);
           if (this.reject) this.reject(msg.data);
           break;
@@ -283,6 +288,7 @@ export class Recorder {
     this.encNode.disconnect();
     this.encNode.onaudioprocess = null;
     this.stopTracks();
+    this.audioCtx.close();
     this.worker.postMessage({type: "stop", data: null});
     return new Promise((resolve, reject) => {
       this.resolve = resolve;
