@@ -367,6 +367,7 @@ export class Form {
     const recordBtn = this.recordBtn = document.createElement("button");
     recordBtn.className = "vmsg-button vmsg-record-button";
     recordBtn.textContent = "●";
+    recordBtn.title = "Start Recording";
     recordBtn.addEventListener("click", () => this.startRecording());
     recordRow.appendChild(recordBtn);
 
@@ -374,6 +375,7 @@ export class Form {
     stopBtn.className = "vmsg-button vmsg-stop-button";
     stopBtn.style.display = "none";
     stopBtn.textContent = "■";
+    stopBtn.title = "Stop Recording";
     stopBtn.addEventListener("click", () => this.stopRecording());
     recordRow.appendChild(stopBtn);
 
@@ -382,6 +384,7 @@ export class Form {
 
     const timer = this.timer = document.createElement("span");
     timer.className = "vmsg-timer";
+    timer.title = "Preview Recording";
     timer.addEventListener("click", () => {
       if (audio.paused) {
         if (this.recorder.blobURL) {
@@ -397,6 +400,7 @@ export class Form {
     const saveBtn = this.saveBtn = document.createElement("button");
     saveBtn.className = "vmsg-button vmsg-save-button";
     saveBtn.textContent = "✓";
+    saveBtn.title = "Save Recording";
     saveBtn.disabled = true;
     saveBtn.addEventListener("click", () => this.close(this.recorder.blob));
     recordRow.appendChild(saveBtn);
@@ -436,6 +440,7 @@ export class Form {
     };
     pitchWrapper.appendChild(pitchSlider);
     this.popup.appendChild(pitchWrapper);
+    recordBtn.focus();
   }
 
   drawError(err) {
@@ -479,6 +484,7 @@ export class Form {
     this.recordBtn.style.display = "none";
     this.stopBtn.style.display = "";
     this.saveBtn.disabled = true;
+    this.stopBtn.focus();
     this.recorder.startRecording();
   }
 
@@ -486,6 +492,7 @@ export class Form {
     clearTimeout(this.tid);
     this.tid = 0;
     this.stopBtn.disabled = true;
+    this.recordBtn.focus();
     this.recorder.stopRecording();
   }
 
